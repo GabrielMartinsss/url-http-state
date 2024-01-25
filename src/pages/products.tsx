@@ -1,12 +1,24 @@
 import { PlusCircle } from "lucide-react";
-import { Button } from "./components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
-import { Dialog, DialogTrigger } from "./components/ui/dialog";
-import { ProductsFilters } from "./components/products-filters";
-import { CreateProductDialog } from "./components/create-product-dialog";
-import { products } from "./data/products";
+import { Button } from "../components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
+import { Dialog, DialogTrigger } from "../components/ui/dialog";
+import { ProductsFilters } from "../components/products-filters";
+import { CreateProductDialog } from "../components/create-product-dialog";
+import { getProducts } from "../data/products";
+import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom"
 
-export function App() {
+export function Products() {
+  const [search] = useSearchParams()
+
+  const id = search.get('id')
+  const name = search.get('name')
+
+  const { data: products } = useQuery({
+    queryKey: ['products', id, name],
+    queryFn: () => getProducts({ id, name }),
+  })
+
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-4">
       <h1 className="font-semibold text-4xl">Produtos</h1>
@@ -37,7 +49,7 @@ export function App() {
           </TableHeader>
 
           <TableBody>
-            {products.map((product) => {
+            {products?.map((product) => {
               return (
                 <TableRow key={product.id}>
                   <TableCell>{product.id}</TableCell>

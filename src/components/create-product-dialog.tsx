@@ -5,6 +5,8 @@ import { Label } from "./ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Product, createProduct } from "@/data/products";
 
 const createProductSchema = z.object({
   name: z.string().min(1),
@@ -18,8 +20,33 @@ export function CreateProductDialog() {
     resolver: zodResolver(createProductSchema)
   })
 
-  function handleCreateProduct(data: CreateProductSchema) {
-    console.log(data)
+  const queryClient = useQueryClient()
+
+  const { mutateAsync: createProductfn } = useMutation({
+    mutationFn: createProduct,
+    onSuccess(responseFromAPI) {
+      // const cached = queryClient.getQueryData(['products'])
+      
+      queryClient.setQueryData<Product[]>(['products'], data => {
+        if (!data) return 
+
+        return [...data, responseFromAPI]
+      })
+    },
+  })
+
+  async function handleCreateProduct({ name, price }: CreateProductSchema) {
+    try {
+      await createProductfn({
+        name,
+        price,
+      })  
+
+      alert('Produto cadastrado com sucesso.')
+    } catch (error) {
+      alert('Erro ao cadastrar produto')
+      console.log(error)
+    }
   }
 
   return (
@@ -36,7 +63,7 @@ export function CreateProductDialog() {
         </div> 
 
         <div className="grid grid-cols-4 items-center gap-3 text-right">
-          <Label htmlFor="price">Priço</Label>
+          <Label htmlFor="price">Preço</Label>
           <Input className="col-span-3" {...register('price')} />
         </div>
 

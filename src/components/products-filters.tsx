@@ -4,21 +4,41 @@ import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useSearchParams } from "react-router-dom"
 
 const productsFiltersSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
+  id: z.string(),
+  name: z.string(),
 })
 
 type ProductsFiltersSchema = z.infer<typeof productsFiltersSchema>
 
 export function ProductsFilters() {
+  const [ searchParams, setSearchParams ] = useSearchParams()
+
+  const id = searchParams.get('id')
+  const name = searchParams.get('name')
+
   const { register, handleSubmit } = useForm<ProductsFiltersSchema>(({
-    resolver: zodResolver(productsFiltersSchema)
+    resolver: zodResolver(productsFiltersSchema),
+    values: {
+      id: id ?? '',
+      name: name ?? '',
+    }
   }))
 
   function handleFilterProducts({ id, name }: ProductsFiltersSchema) {
-    console.log({name, id})
+    setSearchParams(state => {
+      id ? state.set('id', id) : state.delete('id')
+      
+      return state
+    })
+    
+    setSearchParams(state => {
+      name ? state.set('name', name) : state.delete('name')
+
+      return state
+    })
   }
 
   return (
